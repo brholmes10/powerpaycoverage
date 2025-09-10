@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Create a rotating globe</title>
+<title>Power Pay Coverage</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
@@ -13,29 +13,6 @@ body { margin: 0; padding: 0; }
 </head>
 <body>
 <style>
-    #btn-spin {
-        font:
-            bold 12px/20px 'Helvetica Neue',
-            Arial,
-            Helvetica,
-            sans-serif;
-        background-color: #3386c0;
-        color: #fff;
-        position: absolute;
-        top: 20px;
-        left: 50%;
-        z-index: 1;
-        border: none;
-        width: 200px;
-        margin-left: -100px;
-        display: block;
-        cursor: pointer;
-        padding: 10px 20px;
-        border-radius: 3px;
-    }
-    #btn-spin:hover {
-        background-color: #4ea0da;
-    }
     .legend {
         position: absolute;
         top: 20px;       /* push down from top */
@@ -60,9 +37,8 @@ body { margin: 0; padding: 0; }
 
 </style>
 <div id="map"></div>
-<button id="btn-spin">Pause rotation</button>
 <div class="legend" id="legend">
-  <div><span class="legend-key" style="background-color: #00FF00;"></span> Power Pay Coverage</div>
+  <div><span class="legend-key" style="background-color: #669933;"></span> Power Pay Coverage</div>
 </div>
 
 <script>
@@ -75,7 +51,12 @@ body { margin: 0; padding: 0; }
     });
 
     map.on('style.load', () => {
-        map.setFog({}); // Set the default atmosphere style
+        //map.setFog({}); // Set the default atmosphere style
+        // Make the globe background white
+        map.setPaintProperty('background', 'background-color', '#ffffff');
+        
+        // Optional: turn off fog (since it tints the globe edges)
+        map.setFog(null);
 
         // Add FamilyBoundary source
         map.addSource('FamilyBoundary', {
@@ -92,7 +73,7 @@ body { margin: 0; padding: 0; }
                 source: 'FamilyBoundary',
                 'source-layer': 'HarvCountries-0p696e',
                 paint: {
-                    'fill-color': '#00FF00',
+                    'fill-color': '#669933',
                     'fill-opacity': 0.8,
                     'fill-outline-color': '#000000'
                 }

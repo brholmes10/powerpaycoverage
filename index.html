@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Power Pay Coverage</title>
+<title>Create a rotating globe</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
@@ -38,25 +38,26 @@ body { margin: 0; padding: 0; }
 </style>
 <div id="map"></div>
 <div class="legend" id="legend">
-  <div><span class="legend-key" style="background-color: #669933;"></span> Power Pay Coverage</div>
+  <div><span class="legend-key" style="background-color: #39FF14;"></span> Power Pay Coverage</div>
 </div>
 
 <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoiYnJob2xtZXMxMCIsImEiOiJzRG9nY3JrIn0.dsqKQYo38X9n5NlIhPEsGA';
     const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/standard',
+        style: 'mapbox://styles/mapbox/dark-v11',
         zoom: 1.5,
         center: [-90, 40]
     });
 
     map.on('style.load', () => {
-        //map.setFog({}); // Set the default atmosphere style
+        map.setFog({}); // Set the default atmosphere style
         // Make the globe background white
-        map.setPaintProperty('background', 'background-color', '#ffffff');
+        //map.setPaintProperty('background', 'background-color', '#ffffff');
         
         // Optional: turn off fog (since it tints the globe edges)
-        map.setFog(null);
+        
+        //map.setFog(null);
 
         // Add FamilyBoundary source
         map.addSource('FamilyBoundary', {
@@ -69,22 +70,33 @@ body { margin: 0; padding: 0; }
             // Add a layer from the tileset
             map.addLayer({
                 id: 'FamilyBoundary',
-                type: 'fill',  // Use 'line' for outlines
+                type: 'fill',
                 source: 'FamilyBoundary',
                 'source-layer': 'HarvCountries-0p696e',
                 paint: {
-                    'fill-color': '#669933',
-                    'fill-opacity': 0.8,
-                    'fill-outline-color': '#000000'
+                    'fill-color': '#39FF14',
+                    'fill-opacity': [
+                    'case',
+                    ['boolean', ['feature-state', 'hover'], false],
+                    1.0,   // brighter when hovered
+                    0.6    // dimmer by default
+                    ],
+                    'fill-outline-color': [
+                    'case',
+                    ['boolean', ['feature-state', 'hover'], false],
+                    '#000000', // black outline on hover
+                    '#39FF14'  // neon green outline normally
+                    ]
                 }
             });
+
     });
     
 
     // The following values can be changed to control rotation speed:
 
     // At low zooms, complete a revolution every two minutes.
-    const secondsPerRevolution = 120;
+    const secondsPerRevolution = 40;
     // Above zoom level 5, do not rotate.
     const maxSpinZoom = 5;
     // Rotate at intermediate speeds between zoom levels 3 and 5.
@@ -92,6 +104,58 @@ body { margin: 0; padding: 0; }
 
     let userInteracting = false;
     let spinEnabled = true;
+
+// Declare this near the top of your script
+let hoveredId = null;
+
+// Create popup instance (also once)
+const popup = new mapboxgl.Popup({
+  closeButton: false,
+  closeOnClick: false
+});
+
+map.on('mousemove', 'FamilyBoundary', (e) => {
+  if (e.features.length > 0) {
+    // Reset old hover state
+    if (hoveredId !== null) {
+      map.setFeatureState(
+        { source: 'FamilyBoundary', sourceLayer: 'HarvCountries-0p696e', id: hoveredId },
+        { hover: false }
+      );
+    }
+
+    // Set new hover state
+    hoveredId = e.features[0].id;
+    map.setFeatureState(
+      { source: 'FamilyBoundary', sourceLayer: 'HarvCountries-0p696e', id: hoveredId },
+      { hover: true }
+    );
+
+    // Show popup with pointcount
+    const coordinates = e.lngLat;
+    const Point_Coun = e.features[0].properties.Point_Coun;
+
+    popup
+      .setLngLat(coordinates)
+      .setHTML(`<strong>Power Providers:</strong> ${Point_Coun}`)
+      .addTo(map);
+  }
+});
+
+map.on('mouseleave', 'FamilyBoundary', () => {
+  if (hoveredId !== null) {
+    map.setFeatureState(
+      { source: 'FamilyBoundary', sourceLayer: 'HarvCountries-0p696e', id: hoveredId },
+      { hover: false }
+    );
+  }
+  hoveredId = null;
+
+  popup.remove();
+});
+
+
+
 
     function spinGlobe() {
         const zoom = map.getZoom();
